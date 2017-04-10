@@ -4,18 +4,39 @@
 
 var SrcType = {Piece: 0, LinePiece: 1};
 Object.freeze(SrcType);
+var EmptyType = {Front: 0, Back: 1};
+Object.freeze(EmptyType);
 
 var dragSrcEl = null;
 var dragSrcType = SrcType.Piece;
 
+function makeEmptyPiece(type) {
+    var hidden = document.getElementById('hidden');
+    var piece = document.createElement('span');
+    piece.classList.add('line-piece');
+    piece.classList.add('empty-piece');
+    if(type === EmptyType.Front)
+        piece.classList.add('front');
+    hidden.appendChild(piece);
+    piece.addEventListener('dragenter', handleDragEnter, false);
+    piece.addEventListener('dragover', handleDragOver, false);
+    piece.addEventListener('dragleave', handleDragLeave, false);
+    piece.addEventListener('drop', handleDropEmptyPiece, false);
+    piece.addEventListener('dragend', handleDragEnd, false);
+
+    return piece;
+}
+
 // TODO add blank pieces in between for placing new pieces
 function parsePieces(text) {
     var words = text.split(' ');
+    var hidden = document.getElementById('hidden');
     var pieceWrapper = document.createElement('div');
     pieceWrapper.classList.add('line-piece-wrapper');
+    hidden.appendChild(pieceWrapper);
     pieceWrapper.setAttribute('draggable', true);
-    pieceWrapper.addEventListener('dragstart', handleDragStartLinePiece, true);
-    pieceWrapper.addEventListener('dragend', handleDragEnd, true);
+    pieceWrapper.addEventListener('dragstart', handleDragStartLinePiece, false);
+    pieceWrapper.addEventListener('dragend', handleDragEnd, false);
 
     for (var i = 0; i < words.length; ++i) {
         var piece = null;
@@ -28,13 +49,6 @@ function parsePieces(text) {
                 break;
 
             case '...':
-                piece = document.createElement('span');
-                piece.classList.add('empty-piece');
-                piece.addEventListener('dragenter', handleDragEnter, false);
-                piece.addEventListener('dragover', handleDragOver, false);
-                piece.addEventListener('dragleave', handleDragLeave, false);
-                piece.addEventListener('drop', handleDropEmptyPiece, false);
-                piece.addEventListener('dragend', handleDragEnd, false);
                 break;
 
             default:
@@ -43,51 +57,80 @@ function parsePieces(text) {
                 break;
         }
 
-        piece.classList.add('line-piece');
-        pieceWrapper.appendChild(piece);
+        if (piece) {
+            pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Front));
+            piece.classList.add('line-piece');
+            pieceWrapper.appendChild(piece);
+            pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Back));
+        }
     }
 
     return pieceWrapper;
 }
 
-function handleDragStartPiece(e) {
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', this.innerHTML);
+// TODO don't show pieces right next to each other
+function showEmptyPieces() {
+    var pieces = document.querySelectorAll('.empty-piece');
+    [].forEach.call(pieces, function (piece) {
+        var isFront = piece.classList.contains('front');
+        if(!dragSrcEl.contains(piece) &&
+            ((!isFront && !piece.parentNode.nextSibling) ||
+            isFront && piece.parentNode.previousSibling !== dragSrcEl)) {
+            piece.classList.add('active');
+        }
+    });
+}
 
-    this.style.opacity = '0.4';
-    dragSrcEl = this;
+function hideEmptyPieces() {
+    var pieces = document.querySelectorAll('.empty-piece');
+    [].forEach.call(pieces, function (piece) {
+        piece.classList.remove('active');
+    });
+}
+
+function handleDragStart(ev, el) {
+    if(ev.stopPropagation) ev.stopPropagation();
+    ev.dataTransfer.effectAllowed = 'move';
+    ev.dataTransfer.setData('text/html', el.innerHTML);
+
+    el.style.opacity = '0.4';
+    dragSrcEl = el;
+    showEmptyPieces();
+}
+
+function handleDragStartPiece(e) {
     dragSrcType = SrcType.Piece;
+    handleDragStart(e, this);
 }
 
 function handleDragStartLinePiece(e) {
-    console.log(this.outerHTML);
-    e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation();
-
-    this.style.opacity = '0.4';
-    dragSrcEl = this;
     dragSrcType = SrcType.LinePiece;
+    handleDragStart(e, this);
 }
 
 function handleDragOver(e) {
     if(e.preventDefault) e.preventDefault();
+    if(e.stopPropagation) e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
 
     return false;
 }
 
 function handleDragEnter(e) {
+    if(e.stopPropagation) e.stopPropagation();
     this.classList.add('over');
 }
 
 function handleDragLeave(e) {
+    if(e.stopPropagation) e.stopPropagation();
     this.classList.remove('over');
 }
 
+// TODO remove this functionality and have each line be a empty piece
 function handleDropLine(e) {
     if(e.stopPropagation) e.stopPropagation();
 
-    if (dragSrcEl !== this) {
+    if (!this.contains(dragSrcEl)) {
         switch (dragSrcType) {
             case SrcType.Piece:
                 var pieces = parsePieces(e.dataTransfer.getData('text/html'));
@@ -105,15 +148,13 @@ function handleDropLine(e) {
 function handleDropEmptyPiece(e) {
     if(e.stopPropagation) e.stopPropagation();
 
-    if (dragSrcEl !== this) {
-        switch (dragSrcType) {
-            case SrcType.Piece:
-                var pieces = parsePieces(e.dataTransfer.getData('text/html'));
-                this.replaceWith(pieces);
-                break;
-            case SrcType.LinePiece:
-                this.replaceWith(dragSrcEl);
-                break;
+    if (!dragSrcEl.contains(this) && !this.contains(dragSrcEl)) {
+        var piece = (dragSrcType === SrcType.LinePiece ? dragSrcEl : parsePieces(e.dataTransfer.getData('text/html')));
+
+        if(this.classList.contains('front')) {
+            this.parentNode.parentNode.insertBefore(piece, this.parentNode);
+        } else {
+            this.parentNode.parentNode.insertBefore(piece, this.parentNode.nextSibling);
         }
     }
 }
@@ -123,6 +164,7 @@ function handleDragEnd(e) {
     [].forEach.call(lines, function (line) {
         line.classList.remove('over');
     });
+    hideEmptyPieces();
 }
 
 var pieces = document.querySelectorAll('.piece');

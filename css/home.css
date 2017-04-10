@@ -57,6 +57,10 @@
     display: table;
 }
 
+#hidden {
+    visibility: hidden;
+}
+
 
 /* LINES */
 .lines-container {
@@ -133,6 +137,7 @@
     box-shadow: 0 0 2px black;
     display: inline-block;
     float: left;
+    margin-right: 5px;
     transition: all 0.5s ease;
     width: auto;
 }
@@ -143,15 +148,19 @@
     text-align: center;
     line-height: 25px;
     height: 25px;
-    margin-right: 5px;
-    border: dotted 1px black;
     float: left;
 }
 
 .line-piece.empty-piece {
-    min-width: 25px; /* make zero */
+    width: 0;
     background-color: #b3d4fc;
     border: none;
+    margin-left: 5px;
+    transition: all 0.2s ease;
+}
+.line-piece.empty-piece.front {
+    margin-left: 0;
+    margin-right: 5px;
 }
 .line-piece.empty-piece.active {
     width: 25px;
