@@ -4,7 +4,7 @@
 
 var SrcType = {Piece: 0, LinePiece: 1};
 Object.freeze(SrcType);
-var EmptyType = {Front: 0, Back: 1};
+var EmptyType = {Front: 0, Back: 1, Child: 2};
 Object.freeze(EmptyType);
 
 var dragSrcEl = null;
@@ -15,8 +15,14 @@ function makeEmptyPiece(type) {
     var piece = document.createElement('span');
     piece.classList.add('line-piece');
     piece.classList.add('empty-piece');
+
     if(type === EmptyType.Front)
         piece.classList.add('front');
+    else if(type === EmptyType.Back)
+        piece.classList.add('back');
+    else
+        piece.classList.add('child');
+
     hidden.appendChild(piece);
     piece.addEventListener('dragenter', handleDragEnter, false);
     piece.addEventListener('dragover', handleDragOver, false);
@@ -25,6 +31,13 @@ function makeEmptyPiece(type) {
     piece.addEventListener('dragend', handleDragEnd, false);
 
     return piece;
+}
+
+function makeNewLine() {
+    var newLine = document.createElement('div');
+    newLine.classList.add('clearFix');
+
+    return newLine;
 }
 
 // TODO add blank pieces in between for placing new pieces
@@ -38,17 +51,23 @@ function parsePieces(text) {
     pieceWrapper.addEventListener('dragstart', handleDragStartLinePiece, false);
     pieceWrapper.addEventListener('dragend', handleDragEnd, false);
 
+
+    var isNewLine = false;
+
+    pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Front));
     for (var i = 0; i < words.length; ++i) {
         var piece = null;
-
+        isNewLine = false;
         switch (words[i]) {
             case '{':
             case '}':
                 piece = document.createElement('div');
                 piece.innerHTML = words[i];
+                isNewLine = true;
                 break;
 
             case '...':
+                piece = makeEmptyPiece(EmptyType.Child);
                 break;
 
             default:
@@ -58,26 +77,34 @@ function parsePieces(text) {
         }
 
         if (piece) {
-            pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Front));
+            if(isNewLine) pieceWrapper.appendChild(makeNewLine());
             piece.classList.add('line-piece');
             pieceWrapper.appendChild(piece);
-            pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Back));
+            if(isNewLine) pieceWrapper.appendChild(makeNewLine());
         }
     }
+    if(!isNewLine)
+        pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Back));
+    else
+        pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Child));
 
     return pieceWrapper;
 }
 
-// TODO don't show pieces right next to each other
 function showEmptyPieces() {
     var pieces = document.querySelectorAll('.empty-piece');
     [].forEach.call(pieces, function (piece) {
-        var isFront = piece.classList.contains('front');
-        if(!dragSrcEl.contains(piece) &&
-            ((!isFront && !piece.parentNode.nextSibling) ||
-            isFront && piece.parentNode.previousSibling !== dragSrcEl)) {
-            piece.classList.add('active');
+        var isChild = piece.classList.contains('child');
+        if(!dragSrcEl.contains(piece)) {
+            if(!(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')))
+                piece.classList.add('active');
         }
+        // var isFront = piece.classList.contains('front');
+        // if(!dragSrcEl.contains(piece) &&
+        //     ((!isFront && !piece.parentNode.nextSibling) ||
+        //     isFront && piece.parentNode.previousSibling !== dragSrcEl)) {
+        //     piece.classList.add('active');
+        // }
     });
 }
 
@@ -111,14 +138,17 @@ function handleDragStartLinePiece(e) {
 function handleDragOver(e) {
     if(e.preventDefault) e.preventDefault();
     if(e.stopPropagation) e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
+
+    if(!this.classList.contains('line') || !this.childElementCount)
+        e.dataTransfer.dropEffect = 'move';
 
     return false;
 }
 
 function handleDragEnter(e) {
     if(e.stopPropagation) e.stopPropagation();
-    this.classList.add('over');
+    if(!this.classList.contains('line') || !this.childElementCount)
+        this.classList.add('over');
 }
 
 function handleDragLeave(e) {
@@ -130,7 +160,7 @@ function handleDragLeave(e) {
 function handleDropLine(e) {
     if(e.stopPropagation) e.stopPropagation();
 
-    if (!this.contains(dragSrcEl)) {
+    if (!this.childElementCount) {
         switch (dragSrcType) {
             case SrcType.Piece:
                 var pieces = parsePieces(e.dataTransfer.getData('text/html'));
@@ -151,7 +181,9 @@ function handleDropEmptyPiece(e) {
     if (!dragSrcEl.contains(this) && !this.contains(dragSrcEl)) {
         var piece = (dragSrcType === SrcType.LinePiece ? dragSrcEl : parsePieces(e.dataTransfer.getData('text/html')));
 
-        if(this.classList.contains('front')) {
+        if (this.classList.contains('child')) {
+            this.parentNode.insertBefore(piece, this);
+        } else if(this.classList.contains('front')) {
             this.parentNode.parentNode.insertBefore(piece, this.parentNode);
         } else {
             this.parentNode.parentNode.insertBefore(piece, this.parentNode.nextSibling);

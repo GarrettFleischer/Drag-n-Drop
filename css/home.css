@@ -54,7 +54,7 @@
 .clearFix::after {
     content: "";
     clear: both;
-    display: table;
+    display: block;
 }
 
 #hidden {
@@ -86,9 +86,10 @@
     padding-left: 5px;
 }
 .line {
-    height: 25px;
+    min-height: 25px;
     width: auto;
     padding-bottom: 4px;
+    overflow: auto;
 }
 .line.over {
     border: 2px dashed black;
@@ -137,9 +138,10 @@
     box-shadow: 0 0 2px black;
     display: inline-block;
     float: left;
-    margin-right: 5px;
+    margin-left: 5px;
     transition: all 0.5s ease;
     width: auto;
+    overflow: auto;
 }
 
 .line-piece {
@@ -147,20 +149,39 @@
     vertical-align: middle;
     text-align: center;
     line-height: 25px;
-    height: 25px;
+    min-height: 28px;
+    margin-left: 5px;
     float: left;
 }
 
-.line-piece.empty-piece {
+.empty-piece {
     width: 0;
     background-color: #b3d4fc;
     border: none;
-    margin-left: 5px;
     transition: all 0.2s ease;
 }
+
+.empty-piece.front {
+    background-color: green;
+}
+
+.empty-piece.back {
+    background-color: red;
+}
+
+.line-piece.empty-piece.child {
+    background-color: white;
+    margin-left: 0;
+    min-height: 0;
+}
+.line-piece.empty-piece.child.active {
+    background-color: #b3d4fc;
+    margin-left: 5px;
+    min-height: 25px;
+}
+
 .line-piece.empty-piece.front {
     margin-left: 0;
-    margin-right: 5px;
 }
 .line-piece.empty-piece.active {
     width: 25px;
