@@ -6,29 +6,65 @@ var SrcType = {Piece: 0, LinePiece: 1};
 Object.freeze(SrcType);
 var EmptyType = {Front: 0, Back: 1, Child: 2};
 Object.freeze(EmptyType);
+var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5};
+Object.freeze(LangType);
 
 var dragSrcEl = null;
 var dragSrcType = SrcType.Piece;
 
-function makeEmptyPiece(type) {
-    var hidden = document.getElementById('hidden');
-    var piece = document.createElement('span');
-    piece.classList.add('line-piece');
-    piece.classList.add('empty-piece');
+function initListeners() {
+    var lines = $('#lines');
+    lines.on('dragstart', '.line-piece-wrapper', handleDragStartLinePiece);
 
-    if(type === EmptyType.Front)
-        piece.classList.add('front');
-    else if(type === EmptyType.Back)
-        piece.classList.add('back');
+    lines.on('dragenter', '.line,.empty-piece', handleDragEnter);
+    lines.on('dragover', '.line,.empty-piece', handleDragOver);
+    lines.on('dragleave', '.line,.empty-piece', handleDragLeave);
+    lines.on('drop', '.line,.empty-piece', handleDrop);
+    lines.on('dragend', '.line,.empty-piece,.line-piece-wrapper', handleDragEnd);
+}
+
+function makeEmptyPiece(emptyType, acceptedType) {
+    acceptedType = acceptedType || LangType.All;
+
+    var piece = $('<span></span>');
+    piece.addClass('line-piece');
+    piece.addClass('empty-piece');
+
+    piece.data('acceptedType', acceptedType);
+    if(emptyType === EmptyType.Front)
+        piece.addClass('front');
+    else if(emptyType === EmptyType.Back)
+        piece.addClass('back');
     else
-        piece.classList.add('child');
+        piece.addClass('child');
 
-    hidden.appendChild(piece);
-    piece.addEventListener('dragenter', handleDragEnter, false);
-    piece.addEventListener('dragover', handleDragOver, false);
-    piece.addEventListener('dragleave', handleDragLeave, false);
-    piece.addEventListener('drop', handleDropEmptyPiece, false);
-    piece.addEventListener('dragend', handleDragEnd, false);
+    return piece;
+}
+
+function makeText(text) {
+    var piece = document.createElement('span');
+    piece.innerHTML = text;
+
+    return piece;
+}
+
+function addCurly(parent, curly) {
+    parent.append(makeNewLine());
+    parent.append(makeText(curly));
+    parent.append(makeNewLine())
+}
+
+function makeIfStatement() {
+    var piece = document.createElement('div');
+
+    piece.append(makeEmptyPiece(EmptyType.Front));
+    piece.append(makeText('if ('));
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeText(')'));
+    addCurly(piece, '{');
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Statements));
+    addCurly(piece, '}');
+    piece.appendChild(makeEmptyPiece(EmptyType.Back, LangType.Else));
 
     return piece;
 }
@@ -43,14 +79,10 @@ function makeNewLine() {
 // TODO add blank pieces in between for placing new pieces
 function parsePieces(text) {
     var words = text.split(' ');
-    var hidden = document.getElementById('hidden');
     var pieceWrapper = document.createElement('div');
     pieceWrapper.classList.add('line-piece-wrapper');
     hidden.appendChild(pieceWrapper);
-    pieceWrapper.setAttribute('draggable', true);
-    pieceWrapper.addEventListener('dragstart', handleDragStartLinePiece, false);
-    pieceWrapper.addEventListener('dragend', handleDragEnd, false);
-
+    makeDraggable(pieceWrapper);
 
     var isNewLine = false;
 
@@ -157,38 +189,36 @@ function handleDragLeave(e) {
 }
 
 // TODO remove this functionality and have each line be a empty piece
-function handleDropLine(e) {
+function handleDrop(e) {
     if(e.stopPropagation) e.stopPropagation();
 
-    if (!this.childElementCount) {
-        switch (dragSrcType) {
-            case SrcType.Piece:
-                var pieces = parsePieces(e.dataTransfer.getData('text/html'));
-                this.appendChild(pieces);
-                break;
-            case SrcType.LinePiece:
-                this.appendChild(dragSrcEl);
-                break;
+    if(this.hasClass('line')) {
+        if (!this.childElementCount) {
+            switch (dragSrcType) {
+                case SrcType.Piece:
+                    var pieces = parsePieces(e.dataTransfer.getData('text/html'));
+                    this.appendChild(pieces);
+                    break;
+                case SrcType.LinePiece:
+                    this.appendChild(dragSrcEl);
+                    break;
+            }
+        }
+    } else if(this.hasClass('empty-piece')){
+        if (!dragSrcEl.contains(this) && !this.contains(dragSrcEl)) {
+            var piece = (dragSrcType === SrcType.LinePiece ? dragSrcEl : parsePieces(e.dataTransfer.getData('text/html')));
+
+            if (this.classList.contains('child')) {
+                this.parentNode.insertBefore(piece, this);
+            } else if(this.classList.contains('front')) {
+                this.parentNode.parentNode.insertBefore(piece, this.parentNode);
+            } else {
+                this.parentNode.parentNode.insertBefore(piece, this.parentNode.nextSibling);
+            }
         }
     }
 
     return false;
-}
-
-function handleDropEmptyPiece(e) {
-    if(e.stopPropagation) e.stopPropagation();
-
-    if (!dragSrcEl.contains(this) && !this.contains(dragSrcEl)) {
-        var piece = (dragSrcType === SrcType.LinePiece ? dragSrcEl : parsePieces(e.dataTransfer.getData('text/html')));
-
-        if (this.classList.contains('child')) {
-            this.parentNode.insertBefore(piece, this);
-        } else if(this.classList.contains('front')) {
-            this.parentNode.parentNode.insertBefore(piece, this.parentNode);
-        } else {
-            this.parentNode.parentNode.insertBefore(piece, this.parentNode.nextSibling);
-        }
-    }
 }
 
 function handleDragEnd(e) {
@@ -205,14 +235,7 @@ var pieces = document.querySelectorAll('.piece');
     piece.addEventListener('dragend', handleDragEnd, false);
 });
 
-var lines = document.querySelectorAll('.line');
-[].forEach.call(lines, function (line) {
-    line.addEventListener('dragenter', handleDragEnter, false);
-    line.addEventListener('dragover', handleDragOver, false);
-    line.addEventListener('dragleave', handleDragLeave, false);
-    line.addEventListener('drop', handleDropLine, false);
-    line.addEventListener('dragend', handleDragEnd, false);
-});
+
 
 var lineNums = document.querySelectorAll('.line-numbers .line-number');
 [].forEach.call(lineNums, function (num, i) {
