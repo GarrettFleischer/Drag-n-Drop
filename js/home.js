@@ -6,8 +6,10 @@ var SrcType = {Piece: 0, LinePiece: 1};
 Object.freeze(SrcType);
 var EmptyType = {Front: 0, Back: 1, Child: 2};
 Object.freeze(EmptyType);
-var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5};
+var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5, TypeName: 6, Assignment: 7};
 Object.freeze(LangType);
+var CtxType = {None: 0, VarRefAfter: 1};
+Object.freeze(CtxType);
 
 var dragSrcEl = null;
 var dragSrcType = SrcType.Piece;
@@ -23,12 +25,34 @@ function initListeners() {
     lines.on('dragend', '.line,.empty-piece,.line-piece-wrapper', handleDragEnd);
 }
 
+/**
+ *
+ * @param context CtxType
+ * @param from LangType
+ * @param to LangType
+ * @returns {boolean}
+ */
+function canConvert(context, from, to) {
+    switch (from)
+    {
+        case LangType.All:
+            return true;
+        case LangType.Statement:
+            return to === LangType.Statements;
+        case LangType.VarRef:
+            if(context === CtxType.VarRefAfter)
+                return to === LangType.Expr || to === LangType.Assignment;
+            else
+                return to === LangType.Expr;
+        default:
+            return from === to;
+    }
+}
+
 function makeEmptyPiece(emptyType, acceptedType) {
     acceptedType = acceptedType || LangType.All;
 
-    var piece = $('<span></span>');
-    piece.addClass('line-piece');
-    piece.addClass('empty-piece');
+    var piece = $('<span class="line-piece empty-piece"></span>');
 
     piece.data('acceptedType', acceptedType);
     if(emptyType === EmptyType.Front)
@@ -41,11 +65,18 @@ function makeEmptyPiece(emptyType, acceptedType) {
     return piece;
 }
 
-function makeText(text) {
-    var piece = document.createElement('span');
-    piece.innerHTML = text;
+function makePieceWrapper(type) {
+    var wrapper = $('<div class="line-piece-wrapper"></div>');
+    wrapper.data('type', type);
+    return wrapper;
+}
 
-    return piece;
+function makeText(text) {
+    return $('<span class="line-piece">' + text + '</span>');
+}
+
+function makeNewLine() {
+    return $('<div class="clearFix"></div>');
 }
 
 function addCurly(parent, curly) {
@@ -54,10 +85,11 @@ function addCurly(parent, curly) {
     parent.append(makeNewLine())
 }
 
-function makeIfStatement() {
-    var piece = document.createElement('div');
 
-    piece.append(makeEmptyPiece(EmptyType.Front));
+
+function makeIfStatement() {
+    var piece = makePieceWrapper(LangType.Statement);
+
     piece.append(makeText('if ('));
     piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
     piece.append(makeText(')'));
@@ -69,11 +101,33 @@ function makeIfStatement() {
     return piece;
 }
 
-function makeNewLine() {
-    var newLine = document.createElement('div');
-    newLine.classList.add('clearFix');
+function makeBinary(op) {
+    var piece = makePieceWrapper(LangType.Expr);
 
-    return newLine;
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeText(op));
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+
+    return piece;
+}
+
+function makeAssignment() {
+    var piece = makePieceWrapper(LangType.Statement);
+
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.VarRef));
+    piece.append(makeText('='));
+    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+
+    return piece;
+}
+
+function makeVariable(name) {
+    var piece = makePieceWrapper(LangType.VarRef);
+
+    piece.append(makeEmptyPiece(EmptyType.Front, LangType.TypeName));
+    piece.append(makeText(name));
+
+    return piece;
 }
 
 // TODO add blank pieces in between for placing new pieces
@@ -82,7 +136,6 @@ function parsePieces(text) {
     var pieceWrapper = document.createElement('div');
     pieceWrapper.classList.add('line-piece-wrapper');
     hidden.appendChild(pieceWrapper);
-    makeDraggable(pieceWrapper);
 
     var isNewLine = false;
 
@@ -131,12 +184,6 @@ function showEmptyPieces() {
             if(!(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')))
                 piece.classList.add('active');
         }
-        // var isFront = piece.classList.contains('front');
-        // if(!dragSrcEl.contains(piece) &&
-        //     ((!isFront && !piece.parentNode.nextSibling) ||
-        //     isFront && piece.parentNode.previousSibling !== dragSrcEl)) {
-        //     piece.classList.add('active');
-        // }
     });
 }
 
@@ -193,7 +240,7 @@ function handleDrop(e) {
     if(e.stopPropagation) e.stopPropagation();
 
     if(this.hasClass('line')) {
-        if (!this.childElementCount) {
+        if (!this.childElementCount && $(dragSrcEl).data('pieceType') === LangType.Statement) {
             switch (dragSrcType) {
                 case SrcType.Piece:
                     var pieces = parsePieces(e.dataTransfer.getData('text/html'));
