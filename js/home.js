@@ -72,7 +72,7 @@ function parsePieces(text) {
 
             default:
                 piece = document.createElement('span');
-                piece.innerHTML = words[i];
+                piece.innerHTML = words[i].replace(/\\/, '');
                 break;
         }
 
@@ -95,16 +95,21 @@ function showEmptyPieces() {
     var pieces = document.querySelectorAll('.empty-piece');
     [].forEach.call(pieces, function (piece) {
         var isChild = piece.classList.contains('child');
-        if(!dragSrcEl.contains(piece)) {
-            if(!(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')))
-                piece.classList.add('active');
-        }
-        // var isFront = piece.classList.contains('front');
-        // if(!dragSrcEl.contains(piece) &&
-        //     ((!isFront && !piece.parentNode.nextSibling) ||
-        //     isFront && piece.parentNode.previousSibling !== dragSrcEl)) {
-        //     piece.classList.add('active');
+        var isFront = piece.classList.contains('front');
+        var parentIsChild = false;
+        if(piece.parentNode.nextSibling)
+            parentIsChild = piece.parentNode.nextSibling.classList.contains('child');
+        // if(!dragSrcEl.contains(piece)) {
+        //     if(!(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')))
+        //         piece.classList.add('active');
         // }
+        if(!dragSrcEl.contains(piece) &&
+            !(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')) &&
+            ((!isFront && (parentIsChild || !piece.parentNode.nextSibling))) ||
+            (isFront && piece.parentNode.previousSibling !== dragSrcEl))
+        {
+            piece.classList.add('active');
+        }
     });
 }
 

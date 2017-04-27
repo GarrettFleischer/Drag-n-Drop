@@ -161,13 +161,13 @@
     transition: all 0.2s ease;
 }
 
-.empty-piece.front {
-    background-color: green;
-}
+/*.empty-piece.front {*/
+    /*background-color: green;*/
+/*}*/
 
-.empty-piece.back {
-    background-color: red;
-}
+/*.empty-piece.back {*/
+    /*background-color: red;*/
+/*}*/
 
 .line-piece.empty-piece.child {
     background-color: white;
