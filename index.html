@@ -14,230 +14,226 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/home.css">
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script src="https://cdn.rawgit.com/konvajs/konva/1.6.0/konva.min.js"></script>
 </head>
 <body>
-<!--[if lt IE 8]>
-<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-<![endif]-->
 
-<!--<div id="columns" class="clearFix">-->
-<!--<div class="column" draggable="true"><header>A</header></div>-->
-<!--<div class="column" draggable="true"><header>B</header></div>-->
-<!--<div class="column" draggable="true"><header>C</header></div>-->
-<!--</div>-->
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+<script src="js/home.js"></script>
+<!--<script src="js/konva_test.js"></script>-->
 
-<div id="hidden"></div>
-
-<div class="lines-outer-container">
-    <div class="lines-container">
-        <div class="line-numbers">
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
-            <div class="line-number"></div>
+<div id="lines-outer-container">
+    <div id="lines-container">
+        <div id="line-numbers">
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
+        <div class="line-number"></div>
         </div>
         <div id="lines">
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
-            <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
+        <div class="line clearFix"></div>
         </div>
     </div>
 </div>
 
-<div class="pieces">
+<div id="pieces">
     <table>
         <tr>
             <th>Types</th>
@@ -312,12 +308,38 @@
         </tr>
     </table>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
-<!--<script>window.jQuery || document.write('<script src="js/vendor/jquery-3.2.0.min.js"><\/script>')</script>-->
-<script src="js/plugins.js"></script>
-<script src="js/main.js"></script>
-<script src="js/home.js"></script>
-
 </body>
+
+<script type="text/javascript">
+    function getProblemPieces() {
+        return {
+            Version: '0.1',
+            Pieces: [
+                {Type: PieceType.TypeName, Text: 'char'},
+                {Type: PieceType.TypeName, Text: 'int'},
+                {Type: PieceType.TypeName, Text: 'float'},
+                {Type: PieceType.TypeName, Text: 'string'},
+                {Type: PieceType.Variable, Text: 'Animal'}
+                ]
+        };
+    }
+
+    function getSolution() {
+
+    }
+
+    function makeLowerPiece(type, text) {
+        var piece = $('<div class="piece" draggable="true">' + text + '</div>');
+        piece.data('type', type);
+        return piece;
+    }
+
+    window.onload = function () {
+        initListeners();
+        initLineNumbers();
+        initPieceTypes(function () {
+
+        });
+    }
+</script>
 </html>
