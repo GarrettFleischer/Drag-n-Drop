@@ -6,7 +6,7 @@ var SrcType = {Piece: 0, LinePiece: 1};
 Object.freeze(SrcType);
 var EmptyType = {Front: 0, Back: 1, Child: 2};
 Object.freeze(EmptyType);
-var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5, TypeName: 6, Assignment: 7};
+var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5, TypeName: 6, Assignment: 7, Decl: 8};
 Object.freeze(LangType);
 var CtxType = {None: 0, VarRefAfter: 1};
 Object.freeze(CtxType);
@@ -55,6 +55,7 @@ function makeEmptyPiece(emptyType, acceptedType) {
     var piece = $('<span class="line-piece empty-piece"></span>');
 
     piece.data('acceptedType', acceptedType);
+    piece.data('emptyType', emptyType);
     if(emptyType === EmptyType.Front)
         piece.addClass('front');
     else if(emptyType === EmptyType.Back)
