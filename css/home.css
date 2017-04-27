@@ -57,31 +57,27 @@
     display: block;
 }
 
-#hidden {
-    visibility: hidden;
-}
-
 
 /* LINES */
-.lines-container {
+#lines-container {
     border: solid 1px black;
     height: 75vh;
     overflow: auto;
 }
 
-.line-numbers {
+#line-numbers {
     float: left;
     width: 60px;
     background-color: #dddddd;
     text-align: center;
 }
-.line-number {
+#line-number {
     height: 25px;
     width: 100%;
     padding-bottom: 4px;
 }
 
-.lines {
+#lines {
     margin-left: 60px;
     padding-left: 5px;
 }
@@ -98,16 +94,16 @@
 
 
 /* PIECES */
-.pieces {
+#pieces {
     margin-top: -1px;
     height: 24vh;
     overflow: auto;
 }
 
-.pieces table,
-.pieces tr,
-.pieces td,
-.pieces th {
+#pieces table,
+#pieces tr,
+#pieces td,
+#pieces th {
     border: solid 1px black;
 }
 
@@ -116,7 +112,7 @@
     overflow: auto;
 }
 
-.pieces th {
+#pieces th {
     width: 20vw;
 }
 

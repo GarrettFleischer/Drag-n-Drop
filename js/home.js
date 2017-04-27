@@ -2,22 +2,49 @@
  * Created by Garrett on 4/4/2017.
  */
 
-var SrcType = {Piece: 0, LinePiece: 1};
-Object.freeze(SrcType);
-var EmptyType = {Front: 0, Back: 1, Child: 2};
-Object.freeze(EmptyType);
-var LangType = {All: 0, Statements: 1, Statement: 2, Expr: 3, Else: 4, VarRef: 5, TypeName: 6, Assignment: 7};
-Object.freeze(LangType);
-var CtxType = {None: 0, VarRefAfter: 1};
-Object.freeze(CtxType);
+function Enumify(obj) {
+    Object.keys(obj).forEach(function (key, i) {
+        if(obj[key] === -1)
+            obj[key] = i;
+    });
+    Object.freeze(obj);
+}
+
+var SrcType = {Piece: -1, LinePiece: -1};
+Enumify(SrcType);
+
+var EmptyType = {Front: -1, Back: -1, Child: -1};
+Enumify(EmptyType);
+
+var LangType = {All: -1, Statements: -1, Statement: -1, Expr: -1, Else: -1, VarRef: -1, TypeName: -1, Assignment: -1};
+Enumify(LangType);
+
+var PieceType = {
+    TypeName: -1,
+    Variable: -1, String: -1,
+    If: -1, ElseIf: -1, Else: -1, While: -1, For: -1,
+    Equal: -1, Equals: -1, Greater: -1, Less: -1, GreaterEq: -1, LessEq: -1, Plus: -1, PlusEq: -1,
+    Minus: -1, MinusEq: -1, Times: -1, TimesEq: -1, Div: -1, DivEq: -1, Percent: -1, PercentEq: -1,
+    Not: -1, NotEq: -1, Brackets: -1, Curlies: -1, Parens: -1, Dot: -1, SemiColon: -1, New: -1
+};
+Enumify(PieceType);;
+
+var ContainerType = {Types: -1, Variables: -1, Statements: -1, Operators: -1, Functions: -1};
+Enumify(ContainerType);
+
+var DifficultyType = {Easy: 0, Medium: 1, Hard: 2};
+Enumify(DifficultyType);
 
 var dragSrcEl = null;
 var dragSrcType = SrcType.Piece;
+var difficulty = DifficultyType.Easy;
 
 function initListeners() {
     var lines = $('#lines');
-    lines.on('dragstart', '.line-piece-wrapper', handleDragStartLinePiece);
+    var pieces = $('#pieces');
 
+    pieces.on('dragstart', '.piece', handleDragStartPiece);
+    lines.on('dragstart', '.line-piece-wrapper', handleDragStartLinePiece);
     lines.on('dragenter', '.line,.empty-piece', handleDragEnter);
     lines.on('dragover', '.line,.empty-piece', handleDragOver);
     lines.on('dragleave', '.line,.empty-piece', handleDragLeave);
@@ -25,42 +52,58 @@ function initListeners() {
     lines.on('dragend', '.line,.empty-piece,.line-piece-wrapper', handleDragEnd);
 }
 
-/**
- *
- * @param context CtxType
- * @param from LangType
- * @param to LangType
- * @returns {boolean}
- */
-function canConvert(context, from, to) {
-    switch (from)
-    {
-        case LangType.All:
-            return true;
-        case LangType.Statement:
-            return to === LangType.Statements;
-        case LangType.VarRef:
-            if(context === CtxType.VarRefAfter)
-                return to === LangType.Expr || to === LangType.Assignment;
-            else
-                return to === LangType.Expr;
-        default:
-            return from === to;
-    }
+function initLineNumbers() {
+    var nums = $('.line-number');
+    nums.each(function (i) {
+        $(this).html(i + 1);
+    });
 }
 
-function makeEmptyPiece(emptyType, acceptedType) {
-    acceptedType = acceptedType || LangType.All;
+function initPieceTypes(callback) {
+    // TODO grab data from server
+    PieceType = {
+        TypeName: -1,
+        Variable: -1, String: -1,
+        If: -1, ElseIf: -1, Else: -1, While: -1, For: -1,
+        Equal: -1, Equals: -1, Greater: -1, Less: -1, GreaterEq: -1, LessEq: -1, Plus: -1, PlusEq: -1,
+        Minus: -1, MinusEq: -1, Times: -1, TimesEq: -1, Div: -1, DivEq: -1, Percent: -1, PercentEq: -1,
+        Not: -1, NotEq: -1, Brackets: -1, Curlies: -1, Parens: -1, Dot: -1, SemiColon: -1, New: -1
+    };
+    Enumify(PieceType);
 
+    if(callback !== undefined)
+        callback();
+}
+
+// /**
+//  *
+//  * @param context CtxType
+//  * @param from LangType
+//  * @param to LangType
+//  * @returns {boolean}
+//  */
+// function canConvert(context, from, to) {
+//     switch (from)
+//     {
+//         case LangType.All:
+//             return true;
+//         case LangType.Statement:
+//             return to === LangType.Statements;
+//         case LangType.VarRef:
+//             if(context === CtxType.VarRefAfter)
+//                 return to === LangType.Expr || to === LangType.Assignment;
+//             else
+//                 return to === LangType.Expr;
+//         default:
+//             return from === to;
+//     }
+// }
+
+function makeEmptyPiece(emptyType, acceptedTypes) {
     var piece = $('<span class="line-piece empty-piece"></span>');
 
-    piece.data('acceptedType', acceptedType);
-    if(emptyType === EmptyType.Front)
-        piece.addClass('front');
-    else if(emptyType === EmptyType.Back)
-        piece.addClass('back');
-    else
-        piece.addClass('child');
+    piece.data('emptyType', emptyType);
+    piece.data('acceptedTypes', acceptedTypes);
 
     return piece;
 }
@@ -85,18 +128,16 @@ function addCurly(parent, curly) {
     parent.append(makeNewLine())
 }
 
-
-
 function makeIfStatement() {
     var piece = makePieceWrapper(LangType.Statement);
 
     piece.append(makeText('if ('));
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.Expr]));
     piece.append(makeText(')'));
     addCurly(piece, '{');
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Statements));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.Statements]));
     addCurly(piece, '}');
-    piece.appendChild(makeEmptyPiece(EmptyType.Back, LangType.Else));
+    piece.appendChild(makeEmptyPiece(EmptyType.Back, [LangType.Else]));
 
     return piece;
 }
@@ -104,9 +145,9 @@ function makeIfStatement() {
 function makeBinary(op) {
     var piece = makePieceWrapper(LangType.Expr);
 
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.Expr]));
     piece.append(makeText(op));
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.Expr]));
 
     return piece;
 }
@@ -114,9 +155,9 @@ function makeBinary(op) {
 function makeAssignment() {
     var piece = makePieceWrapper(LangType.Statement);
 
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.VarRef));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.VarRef]));
     piece.append(makeText('='));
-    piece.append(makeEmptyPiece(EmptyType.Child, LangType.Expr));
+    piece.append(makeEmptyPiece(EmptyType.Child, [LangType.Expr]));
 
     return piece;
 }
@@ -124,83 +165,91 @@ function makeAssignment() {
 function makeVariable(name) {
     var piece = makePieceWrapper(LangType.VarRef);
 
-    piece.append(makeEmptyPiece(EmptyType.Front, LangType.TypeName));
+    piece.append(makeEmptyPiece(EmptyType.Front, [LangType.TypeName]));
     piece.append(makeText(name));
 
     return piece;
 }
 
-// TODO add blank pieces in between for placing new pieces
-function parsePieces(text) {
-    var words = text.split(' ');
-    var pieceWrapper = document.createElement('div');
-    pieceWrapper.classList.add('line-piece-wrapper');
-    hidden.appendChild(pieceWrapper);
+function makePiece(type, text) {
+    switch (type)
+    {
 
-    var isNewLine = false;
-
-    pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Front));
-    for (var i = 0; i < words.length; ++i) {
-        var piece = null;
-        isNewLine = false;
-        switch (words[i]) {
-            case '{':
-            case '}':
-                piece = document.createElement('div');
-                piece.innerHTML = words[i];
-                isNewLine = true;
-                break;
-
-            case '...':
-                piece = makeEmptyPiece(EmptyType.Child);
-                break;
-
-            default:
-                piece = document.createElement('span');
-                piece.innerHTML = words[i];
-                break;
-        }
-
-        if (piece) {
-            if(isNewLine) pieceWrapper.appendChild(makeNewLine());
-            piece.classList.add('line-piece');
-            pieceWrapper.appendChild(piece);
-            if(isNewLine) pieceWrapper.appendChild(makeNewLine());
-        }
     }
-    if(!isNewLine)
-        pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Back));
-    else
-        pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Child));
-
-    return pieceWrapper;
 }
 
-function showEmptyPieces() {
-    var pieces = document.querySelectorAll('.empty-piece');
-    [].forEach.call(pieces, function (piece) {
-        var isChild = piece.classList.contains('child');
-        if(!dragSrcEl.contains(piece)) {
-            if(!(isChild && piece.previousSibling.classList.contains('line-piece-wrapper')))
-                piece.classList.add('active');
-        }
+// // TODO add blank pieces in between for placing new pieces
+// function parsePieces(text) {
+//     var words = text.split(' ');
+//     var pieceWrapper = document.createElement('div');
+//     pieceWrapper.classList.add('line-piece-wrapper');
+//     hidden.appendChild(pieceWrapper);
+//
+//     var isNewLine = false;
+//
+//     pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Front));
+//     for (var i = 0; i < words.length; ++i) {
+//         var piece = null;
+//         isNewLine = false;
+//         switch (words[i]) {
+//             case '{':
+//             case '}':
+//                 piece = document.createElement('div');
+//                 piece.innerHTML = words[i];
+//                 isNewLine = true;
+//                 break;
+//
+//             case '...':
+//                 piece = makeEmptyPiece(EmptyType.Child);
+//                 break;
+//
+//             default:
+//                 piece = document.createElement('span');
+//                 piece.innerHTML = words[i];
+//                 break;
+//         }
+//
+//         if (piece) {
+//             if(isNewLine) pieceWrapper.appendChild(makeNewLine());
+//             piece.classList.add('line-piece');
+//             pieceWrapper.appendChild(piece);
+//             if(isNewLine) pieceWrapper.appendChild(makeNewLine());
+//         }
+//     }
+//     if(!isNewLine)
+//         pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Back));
+//     else
+//         pieceWrapper.appendChild(makeEmptyPiece(EmptyType.Child));
+//
+//     return pieceWrapper;
+// }
+
+/**
+ * @param piece the piece type that must be accepted
+ * @param difficulty
+ */
+function showEmptyPieces(piece, difficulty) {
+    var emptyPieces = $('.line-piece-wrapper .empty-piece');
+    emptyPieces.forEach(function (empty) {
+        if(difficulty === DifficultyType.Medium || empty.data('acceptedTypes').contains(piece.data('type')))
+            empty.addClass('active');
     });
 }
 
 function hideEmptyPieces() {
-    var pieces = document.querySelectorAll('.empty-piece');
-    [].forEach.call(pieces, function (piece) {
-        piece.classList.remove('active');
+    var pieces = $('.line-piece-wrapper .empty-piece');
+    pieces.forEach(function (piece) {
+        piece.removeClass('active');
     });
 }
 
 function handleDragStart(ev, el) {
     if(ev.stopPropagation) ev.stopPropagation();
     ev.dataTransfer.effectAllowed = 'move';
-    ev.dataTransfer.setData('text/html', el.innerHTML);
+    ev.dataTransfer.setData('text/html', el.innerHTML); // for FireFox to register the move
 
-    el.style.opacity = '0.4';
     dragSrcEl = el;
+    dragSrcEl.style.opacity = '0.4';
     showEmptyPieces();
 }
 
@@ -243,7 +292,7 @@ function handleDrop(e) {
         if (!this.childElementCount && $(dragSrcEl).data('pieceType') === LangType.Statement) {
             switch (dragSrcType) {
                 case SrcType.Piece:
-                    var pieces = parsePieces(e.dataTransfer.getData('text/html'));
+                    var pieces = $(dragSrcEl).clone()
                     this.appendChild(pieces);
                     break;
                 case SrcType.LinePiece:
@@ -270,23 +319,24 @@ function handleDrop(e) {
 
 function handleDragEnd(e) {
     this.style.opacity = '1';
-    [].forEach.call(lines, function (line) {
+    var lines = $('.line');
+    lines.forEach(function (line) {
         line.classList.remove('over');
     });
     hideEmptyPieces();
 }
 
-var pieces = document.querySelectorAll('.piece');
-[].forEach.call(pieces, function (piece) {
-    piece.addEventListener('dragstart', handleDragStartPiece, false);
-    piece.addEventListener('dragend', handleDragEnd, false);
-});
+// var pieces = document.querySelectorAll('.piece');
+// [].forEach.call(pieces, function (piece) {
+//     piece.addEventListener('dragstart', handleDragStartPiece, false);
+//     piece.addEventListener('dragend', handleDragEnd, false);
+// });
 
 
 
-var lineNums = document.querySelectorAll('.line-numbers .line-number');
-[].forEach.call(lineNums, function (num, i) {
-    num.innerHTML = i + 1;
-});
+// var lineNums = document.querySelectorAll('.line-numbers .line-number');
+// [].forEach.call(lineNums, function (num, i) {
+//     num.innerHTML = i + 1;
+// });
 
 
